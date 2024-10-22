@@ -1,0 +1,61 @@
+version: "3.9"
+services:
+  nginx:
+    container_name: ln_nginx
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    ports:
+      - 8000:80
+    tty: true
+    depends_on:
+      - web
+  web:
+    container_name: ln_web
+    build:
+      context: .
+      dockerfile: ./docker/web/Dockerfile
+    environment:
+      PORT: '3000'
+      HOST: '0.0.0.0'
+    expose:
+      - 3000
+    volumes:
+      - ./web:/app
+    stdin_open: true
+    tty: true
+    # restart: always
+    depends_on:
+      - api
+  api:
+    container_name: ln_api
+    build:
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    environment:
+      LANG: 'ja_JP.UTF-8'
+      TZ: 'Asia/Tokyo'
+    volumes:
+      - ./api:/app
+    expose:
+      - 9000
+    tty: true
+    # restart: always
+  
+  db:
+    container_name: ln_db
+    build:
+      context: .
+      dockerfile: ./docker/db/Dockerfile
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: ln_database
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+      TZ: 'Asia/Tokyo'
+    volumes:
+      - mysql-volume:/var/lib/mysql
+volumes:
+  mysql-volume:
